@@ -4,6 +4,8 @@ import com.example.kitchensink.domain.Member;
 import com.example.kitchensink.dto.MemberRequest;
 import com.example.kitchensink.dto.MemberResponse;
 import com.example.kitchensink.service.MemberRegistrationService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,6 +15,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/members")
+@Tag(name = "Member Resource", description = "Endpoints for managing kitchensink members")
 public class MemberController {
 
     private final MemberRegistrationService service;
@@ -22,6 +25,7 @@ public class MemberController {
     }
 
     @GetMapping
+    @Operation(summary = "List all members", description = "Returns a list of all registered members ordered by name alphabetically")
     public List<MemberResponse> listAll() {
         return service.findAllOrderedByName().stream()
                 .map(this::toResponse)
@@ -29,6 +33,7 @@ public class MemberController {
     }
 
     @PostMapping
+    @Operation(summary = "Register a new member", description = "Validates and saves a new member to the MongoDB database")
     public ResponseEntity<MemberResponse> register(@Valid @RequestBody MemberRequest request) {
         Member member = new Member(null, request.name(), request.email(), request.phoneNumber());
         Member saved = service.register(member);
