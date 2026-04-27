@@ -14,17 +14,18 @@ public class Member {
 
     @NotNull
     @Size(min = 1, max = 25)
+    @Pattern(regexp = "[^0-9]*", message = "Must not contain numbers")
     private String name;
 
     @NotNull
     @NotEmpty
     @Email
+    /* Index managed by Mongock (InitMigration); annotation kept for documentation */
     @Indexed(unique = true)
     private String email;
 
     @NotNull
-    @Size(min = 10, max = 12)
-    @Pattern(regexp = "\\d{10,12}")
+    @PhoneNumber
     private String phoneNumber;
 
     protected Member() {}

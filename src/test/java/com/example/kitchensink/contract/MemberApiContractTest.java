@@ -1,5 +1,8 @@
 package com.example.kitchensink.contract;
 
+import com.example.kitchensink.domain.Member;
+import com.mongodb.client.model.IndexOptions;
+import org.bson.Document;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +27,9 @@ class MemberApiContractTest {
 
     @BeforeEach
     void setUp() {
-        mongoTemplate.getDb().drop();
+        mongoTemplate.dropCollection(Member.class);
+        mongoTemplate.getCollection("members")
+            .createIndex(new Document("email", 1), new IndexOptions().unique(true));
     }
 
     @Test

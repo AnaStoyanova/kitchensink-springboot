@@ -3,3 +3,7 @@ spring:
     mongodb:
       uri: mongodb://localhost:27017/kitchensink-test
       auto-index-creation: false
+
+mongock:
+  migration-scan-package:
+    - com.example.kitchensink.migrations

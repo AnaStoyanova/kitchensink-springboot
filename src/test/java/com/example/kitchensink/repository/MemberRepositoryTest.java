@@ -1,10 +1,13 @@
 package com.example.kitchensink.repository;
 
 import com.example.kitchensink.domain.Member;
+import com.mongodb.client.model.IndexOptions;
+import org.bson.Document;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
+import org.springframework.data.mongodb.core.MongoTemplate;
 
 import static org.assertj.core.api.Assertions.*;
 
@@ -14,9 +17,14 @@ class MemberRepositoryTest {
     @Autowired
     private MemberRepository repository;
 
+    @Autowired
+    private MongoTemplate mongoTemplate;
+
     @BeforeEach
     void setUp() {
-        repository.deleteAll();
+        mongoTemplate.dropCollection(Member.class);
+        mongoTemplate.getCollection("members")
+            .createIndex(new Document("email", 1), new IndexOptions().unique(true));
     }
 
     @Test
