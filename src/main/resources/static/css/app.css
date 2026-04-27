@@ -1,0 +1,17 @@
+.app-header {
+    background: #1a1a2e;
+}
+
+.app-header .badge-stack {
+    font-size: .7rem;
+    opacity: .75;
+    letter-spacing: .04em;
+}
+
+.rest-link {
+    font-size: .8rem;
+}
+
+.table th {
+    white-space: nowrap;
+}
