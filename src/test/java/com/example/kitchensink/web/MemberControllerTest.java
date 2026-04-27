@@ -1,6 +1,7 @@
 package com.example.kitchensink.web;
 
 import com.example.kitchensink.domain.Member;
+import com.example.kitchensink.dto.MemberRequest;
 import com.example.kitchensink.service.EmailAlreadyExistsException;
 import com.example.kitchensink.service.MemberRegistrationService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -17,6 +18,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.hamcrest.Matchers.containsString;
 
 @WebMvcTest(MemberController.class)
 class MemberControllerTest {
@@ -44,35 +46,37 @@ class MemberControllerTest {
 
     @Test
     void POST_validMember_returns200() throws Exception {
-        var member = new Member(null, "Alice", "alice@example.com", "1234567890");
+        var request = new MemberRequest("Alice", "alice@example.com", "1234567890");
         when(service.register(any())).thenReturn(
             new Member("1", "Alice", "alice@example.com", "1234567890"));
 
         mockMvc.perform(post("/api/members")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(member)))
-            .andExpect(status().isOk());
+                .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.id").value("1"))
+            .andExpect(jsonPath("$.name").value("Alice"));
     }
 
     @Test
     void POST_invalidEmail_returns400() throws Exception {
-        var member = new Member(null, "Alice", "not-an-email", "1234567890");
+        var request = new MemberRequest("Alice", "not-an-email", "1234567890");
 
         mockMvc.perform(post("/api/members")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(member)))
+                .content(objectMapper.writeValueAsString(request)))
             .andExpect(status().isBadRequest());
     }
 
     @Test
     void POST_duplicateEmail_returns409() throws Exception {
-        var member = new Member(null, "Alice", "alice@example.com", "1234567890");
+        var request = new MemberRequest("Alice", "alice@example.com", "1234567890");
         when(service.register(any())).thenThrow(
             new EmailAlreadyExistsException("Email already registered: alice@example.com"));
 
         mockMvc.perform(post("/api/members")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(member)))
+                .content(objectMapper.writeValueAsString(request)))
             .andExpect(status().isConflict());
     }
 
@@ -86,5 +90,16 @@ class MemberControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(body))
             .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void POST_invalidPhone_returns400WithCustomMessage() throws Exception {
+        var request = new MemberRequest("Alice", "alice@example.com", "123");
+
+        mockMvc.perform(post("/api/members")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.phoneNumber").value("Invalid phone number. Must be 10-12 digits."));
     }
 }

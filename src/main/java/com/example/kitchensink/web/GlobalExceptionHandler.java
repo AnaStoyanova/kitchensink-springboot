@@ -20,7 +20,8 @@ public class GlobalExceptionHandler {
         Map<String, String> errors = ex.getBindingResult().getFieldErrors().stream()
             .collect(Collectors.toMap(
                 FieldError::getField,
-                fe -> fe.getDefaultMessage() != null ? fe.getDefaultMessage() : "invalid"));
+                fe -> fe.getDefaultMessage() != null ? fe.getDefaultMessage() : "invalid",
+                (existing, replacement) -> existing + ", " + replacement));
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
     }
 

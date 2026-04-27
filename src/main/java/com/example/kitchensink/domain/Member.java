@@ -1,5 +1,6 @@
 package com.example.kitchensink.domain;
 
+import com.example.kitchensink.validation.PhoneNumber;
 import jakarta.validation.constraints.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
