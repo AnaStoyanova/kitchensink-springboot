@@ -5,6 +5,7 @@ import com.example.kitchensink.repository.MemberRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class MemberRegistrationService {
@@ -21,6 +22,10 @@ public class MemberRegistrationService {
                 "Email already registered: " + member.getEmail());
         }
         return repository.save(member);
+    }
+
+    public Optional<Member> findById(String id) {
+        return repository.findById(id);
     }
 
     public List<Member> findAllOrderedByName() {

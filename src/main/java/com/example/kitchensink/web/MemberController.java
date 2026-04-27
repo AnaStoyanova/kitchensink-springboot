@@ -24,6 +24,15 @@ public class MemberController {
         this.service = service;
     }
 
+    @GetMapping("/{id}")
+    @Operation(summary = "Get member by ID", description = "Returns a single member by their MongoDB ObjectId")
+    public ResponseEntity<MemberResponse> getById(@PathVariable String id) {
+        return service.findById(id)
+                .map(this::toResponse)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
     @GetMapping
     @Operation(summary = "List all members", description = "Returns a list of all registered members ordered by name alphabetically")
     public List<MemberResponse> listAll() {

@@ -33,6 +33,27 @@ class MemberApiContractTest {
     }
 
     @Test
+    void GET_member_byId_returns200() {
+        var headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        var created = restTemplate.postForEntity("/api/members",
+            new HttpEntity<>("""
+                {"name":"Alice","email":"alice@example.com","phoneNumber":"1234567890"}
+                """, headers), Map.class);
+        var id = (String) created.getBody().get("id");
+
+        var response = restTemplate.getForEntity("/api/members/" + id, Map.class);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).containsEntry("name", "Alice");
+    }
+
+    @Test
+    void GET_member_byId_notFound_returns404() {
+        var response = restTemplate.getForEntity("/api/members/000000000000000000000000", Map.class);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+    }
+
+    @Test
     void GET_members_empty_returns200WithEmptyList() {
         var response = restTemplate.getForEntity("/api/members", List.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);

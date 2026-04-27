@@ -13,6 +13,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -31,6 +32,25 @@ class MemberControllerTest {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Test
+    void GET_member_byId_returns200() throws Exception {
+        when(service.findById("abc123")).thenReturn(
+            Optional.of(new Member("abc123", "Alice", "alice@example.com", "1234567890")));
+
+        mockMvc.perform(get("/api/members/abc123"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.id").value("abc123"))
+            .andExpect(jsonPath("$.name").value("Alice"));
+    }
+
+    @Test
+    void GET_member_byId_notFound_returns404() throws Exception {
+        when(service.findById("nonexistent")).thenReturn(Optional.empty());
+
+        mockMvc.perform(get("/api/members/nonexistent"))
+            .andExpect(status().isNotFound());
+    }
 
     @Test
     void GET_members_returnsJsonList() throws Exception {

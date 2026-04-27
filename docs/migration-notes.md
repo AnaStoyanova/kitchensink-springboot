@@ -11,7 +11,7 @@ The relational `members` table maps cleanly to a `members` collection. Key diffe
 - **`id` type**: relational uses auto-increment `Long`; MongoDB uses `ObjectId` (represented as `String`) — no sequence table required
 - **Unique email**: JPA uses a DDL `UNIQUE` constraint; MongoDB uses `@Indexed(unique=true)` declared on the field and enforced by the driver — same guarantee, different mechanism
 - **Queries**: JPQL disappears entirely — Spring Data resolves method names like `findAllByOrderByNameAsc()` to MongoDB queries automatically
-- **Index creation**: `auto-index-creation: true` is set in `application.yml` for development; in production indexes should be managed via a migration tool (e.g. [Mongock](https://mongock.io)) to avoid startup overhead and ensure auditability
+- **Index creation**: Managed via [Mongock](https://mongock.io) migrations (`InitMigration`), the MongoDB equivalent of Flyway/Liquibase. `auto-index-creation` is kept `false` in `application.yml` to prevent `IndexOptionsConflict` errors if an index already exists from a previous migration run. Mongock tracks each changeset in a `mongockChangeLog` collection so migrations are auditable, idempotent, and safe to run in CI/CD pipelines
 
 ### Contract-test-first approach
 Contract tests were written before any Spring Boot code, derived from reading the original kitchensink JAX-RS source. This gave a clear, objective definition of "done" — the migration is complete when all contract tests pass on the new stack.
@@ -64,6 +64,6 @@ In CI (GitHub Actions, GitLab CI) Testcontainers works correctly because Docker 
 
 2. Writing contract tests *before* any migration code forces you to understand the *observable behaviour* of the legacy system rather than its intended behaviour. This is the highest-leverage risk-reduction step in any migration.
 
-3. `@Indexed(unique=true)` in Spring Data MongoDB requires `spring.data.mongodb.auto-index-creation=true` in `application.yml` to take effect at startup. It's easy to miss, and the failure mode is silent — the index never gets created, duplicate emails are accepted, and the bug only surfaces in production.
+3. Index management in MongoDB should use a migration tool like [Mongock](https://mongock.io) rather than relying on `auto-index-creation`. Spring Boot's `auto-index-creation` is convenient locally but unsafe in production: it conflicts with existing indexes and gives no audit trail. Mongock tracks each changeset, is idempotent, and integrates with Spring Boot's application lifecycle exactly as Flyway/Liquibase does for relational databases.
 
 4. Docker Desktop for Mac has a Java client incompatibility with its socket proxy when "Use containerd" mode is enabled. Always verify Testcontainers works in your specific Docker Desktop configuration before committing to it as the CI test infrastructure.
