@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>kitchensink – Error</title>
+    <link th:href="@{/css/app.css}" rel="stylesheet">
+</head>
+<body>
+
+<div id="container">
+
+    <div class="dualbrand">
+        kitchensink
+        <small>Spring Boot 3.5 · Java 21 · MongoDB</small>
+    </div>
+
+    <div id="content">
+        <h1>Oops!</h1>
+        <p>
+            <strong th:text="${status}">500</strong>
+            – <span th:text="${error}">Internal Server Error</span>
+        </p>
+        <p th:if="${message}" th:text="${message}" class="invalid"></p>
+        <p><a th:href="@{/}">← Back to kitchensink</a></p>
+    </div>
+
+    <div id="aside">
+        <p>If the problem persists, check the application logs.</p>
+        <ul>
+            <li><a th:href="@{/actuator/health}" target="_blank">Health check</a></li>
+            <li><a th:href="@{/swagger-ui/index.html}" target="_blank">API Documentation</a></li>
+        </ul>
+    </div>
+
+    <div id="footer">
+        <p>Migrated from <a href="https://github.com/jboss-developer/jboss-eap-quickstarts/tree/master/kitchensink" target="_blank">JBoss EAP kitchensink</a>
+           to Spring Boot 3.5.0 + Java 21 + MongoDB.</p>
+    </div>
+
+</div>
+
+</body>
+</html>
