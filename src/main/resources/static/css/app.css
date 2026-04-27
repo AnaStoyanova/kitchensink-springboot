@@ -95,29 +95,32 @@ form.reg-form {
     margin-bottom: 20px;
 }
 
-.form-grid {
-    display: grid;
-    grid-template-columns: 90px 1fr auto;
-    align-items: center;
-    gap: 6px 8px;
+.form-table {
+    border-collapse: collapse;
     margin-bottom: 10px;
 }
 
-.form-grid label {
+.form-table td {
+    padding: 3px 4px;
+    vertical-align: middle;
+}
+
+.form-table label {
     text-align: right;
     font-weight: bold;
     color: #363636;
-    padding-top: 2px;
+    white-space: nowrap;
+    display: block;
+    padding-right: 6px;
 }
 
-.form-grid input[type="text"],
-.form-grid input[type="email"],
-.form-grid input[type="tel"] {
-    width: 100%;
+.form-table input[type="text"],
+.form-table input[type="email"],
+.form-table input[type="tel"] {
     padding: 3px 4px;
     border: 1px solid #ccc;
     font-size: 1em;
-    margin: 0;
+    width: 200px;
 }
 
 .register-btn {
