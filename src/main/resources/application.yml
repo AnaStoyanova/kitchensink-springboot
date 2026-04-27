@@ -1,0 +1,14 @@
+spring:
+  application:
+    name: kitchensink
+  data:
+    mongodb:
+      uri: ${SPRING_DATA_MONGODB_URI:mongodb://localhost:27017/kitchensink}
+      auto-index-creation: true
+server:
+  port: 8080
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
