@@ -1,6 +1,5 @@
 package com.example.kitchensink.migrations;
 
-import com.example.kitchensink.domain.Member;
 import io.mongock.api.annotations.ChangeUnit;
 import io.mongock.api.annotations.Execution;
 import io.mongock.api.annotations.RollbackExecution;

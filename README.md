@@ -25,26 +25,26 @@ Migration of the [JBoss EAP kitchensink quickstart](https://github.com/jboss-dev
 docker compose up --build
 ```
 
-The app starts on `http://localhost:8080`.
+The app starts on `http://localhost:8080/kitchensink`.
 
 ### API
 
 ```bash
 # List all members
-curl http://localhost:8080/api/members
+curl http://localhost:8080/kitchensink/rest/members
 
 # Register a member
-curl -X POST http://localhost:8080/api/members \
+curl -X POST http://localhost:8080/kitchensink/rest/members \
   -H "Content-Type: application/json" \
   -d '{"name":"Alice","email":"alice@example.com","phoneNumber":"1234567890"}'
 
 # Validation — invalid email returns 400
-curl -X POST http://localhost:8080/api/members \
+curl -X POST http://localhost:8080/kitchensink/rest/members \
   -H "Content-Type: application/json" \
   -d '{"name":"Alice","email":"not-valid","phoneNumber":"1234567890"}'
 
 # Duplicate email returns 409
-curl -X POST http://localhost:8080/api/members \
+curl -X POST http://localhost:8080/kitchensink/rest/members \
   -H "Content-Type: application/json" \
   -d '{"name":"Alice","email":"alice@example.com","phoneNumber":"1234567890"}'
 ```
