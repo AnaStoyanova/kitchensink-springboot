@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>kitchensink</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .app-header { background: #1a1a2e; }
+        .app-header .badge-stack { font-size: .7rem; opacity: .75; letter-spacing: .04em; }
+        .rest-link { font-size: .8rem; }
+        .table th { white-space: nowrap; }
+    </style>
+</head>
+<body class="bg-light">
+
+<header class="app-header text-white py-3 mb-4 shadow">
+    <div class="container d-flex align-items-center gap-3">
+        <div>
+            <h1 class="h4 mb-0 fw-bold">kitchensink</h1>
+            <span class="badge-stack">Spring Boot 3.5 &nbsp;·&nbsp; Java 21 &nbsp;·&nbsp; MongoDB</span>
+        </div>
+        <div class="ms-auto">
+            <a href="/swagger-ui/index.html" class="btn btn-sm btn-outline-light" target="_blank">API Docs</a>
+        </div>
+    </div>
+</header>
+
+<main class="container pb-5">
+
+    <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+        <span th:text="${successMessage}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
+    <div class="row g-4 align-items-start">
+
+        <!-- Registration Form -->
+        <div class="col-lg-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h2 class="h6 mb-0">Member Registration</h2>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted small">Enforces annotation-based constraints defined on the model class.</p>
+                    <form th:action="@{/}" th:object="${form}" method="post" novalidate>
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Name</label>
+                            <input type="text" id="name" th:field="*{name}"
+                                   class="form-control"
+                                   th:classappend="${#fields.hasErrors('name')} ? ' is-invalid'"
+                                   placeholder="Jane Doe">
+                            <div class="invalid-feedback" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" id="email" th:field="*{email}"
+                                   class="form-control"
+                                   th:classappend="${#fields.hasErrors('email')} ? ' is-invalid'"
+                                   placeholder="jane@example.com">
+                            <div class="invalid-feedback" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="phoneNumber" class="form-label">Phone #</label>
+                            <input type="tel" id="phoneNumber" th:field="*{phoneNumber}"
+                                   class="form-control"
+                                   th:classappend="${#fields.hasErrors('phoneNumber')} ? ' is-invalid'"
+                                   placeholder="1234567890">
+                            <div class="invalid-feedback" th:if="${#fields.hasErrors('phoneNumber')}" th:errors="*{phoneNumber}"></div>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Register</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Member List -->
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
+                    <h2 class="h6 mb-0">Members</h2>
+                    <span class="badge bg-light text-dark" th:text="${members.size()} + ' registered'">0 registered</span>
+                </div>
+                <div class="card-body p-0">
+                    <p th:if="${members.isEmpty()}" class="text-muted text-center py-4 mb-0">
+                        <em>No registered members.</em>
+                    </p>
+                    <div th:if="${!members.isEmpty()}" class="table-responsive">
+                        <table class="table table-striped table-hover mb-0">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Id</th>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Phone #</th>
+                                    <th>REST URL</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="member : ${members}">
+                                    <td class="text-muted small" th:text="${member.id}"></td>
+                                    <td th:text="${member.name}"></td>
+                                    <td th:text="${member.email}"></td>
+                                    <td th:text="${member.phoneNumber}"></td>
+                                    <td>
+                                        <a class="rest-link"
+                                           th:href="@{'/api/members/' + ${member.id}}"
+                                           th:text="'/api/members/' + ${member.id}"
+                                           target="_blank"></a>
+                                    </td>
+                                </tr>
+                            </tbody>
+                            <tfoot class="table-light">
+                                <tr>
+                                    <td colspan="5" class="small text-muted">
+                                        REST URL for all members:
+                                        <a href="/api/members" target="_blank">/api/members</a>
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
