@@ -69,8 +69,8 @@
                     <td th:text="${member.email}"></td>
                     <td th:text="${member.phoneNumber}"></td>
                     <td>
-                        <a th:href="@{'/api/members/' + ${member.id}}"
-                           th:text="'/api/members/' + ${member.id}"
+                        <a th:href="@{'/rest/members/' + ${member.id}}"
+                           th:text="'/rest/members/' + ${member.id}"
                            target="_blank"></a>
                     </td>
                 </tr>
@@ -79,7 +79,7 @@
                 <tr>
                     <td colspan="5">
                         REST URL for all members:
-                        <a href="/api/members" target="_blank">/api/members</a>
+                        <a th:href="@{/rest/members}" th:text="@{/rest/members}" target="_blank"></a>
                     </td>
                 </tr>
             </tfoot>
@@ -94,7 +94,7 @@
             <li><a href="https://www.mongodb.com/docs/drivers/java/sync/" target="_blank">MongoDB Java Driver</a></li>
             <li><a href="https://docs.spring.io/spring-data/mongodb/reference/" target="_blank">Spring Data MongoDB</a></li>
             <li><a href="https://www.mongock.io/docs/" target="_blank">Mongock Migrations</a></li>
-            <li><a href="/swagger-ui/index.html" target="_blank">API Documentation (Swagger)</a></li>
+            <li><a th:href="@{/swagger-ui/index.html}" target="_blank">API Documentation (Swagger)</a></li>
         </ul>
     </div><!-- /aside -->
 

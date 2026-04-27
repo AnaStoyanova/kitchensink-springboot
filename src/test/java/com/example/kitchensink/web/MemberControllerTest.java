@@ -40,7 +40,7 @@ class MemberControllerTest {
         when(service.findById("abc123")).thenReturn(
             Optional.of(new Member("abc123", "Alice", "alice@example.com", "1234567890")));
 
-        mockMvc.perform(get("/api/members/abc123"))
+        mockMvc.perform(get("/rest/members/abc123"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.id").value("abc123"))
             .andExpect(jsonPath("$.name").value("Alice"));
@@ -50,7 +50,7 @@ class MemberControllerTest {
     void GET_member_byId_notFound_returns404() throws Exception {
         when(service.findById("nonexistent")).thenReturn(Optional.empty());
 
-        mockMvc.perform(get("/api/members/nonexistent"))
+        mockMvc.perform(get("/rest/members/nonexistent"))
             .andExpect(status().isNotFound());
     }
 
@@ -60,7 +60,7 @@ class MemberControllerTest {
             new Member("1", "Alice", "alice@example.com", "1234567890")
         ));
 
-        mockMvc.perform(get("/api/members"))
+        mockMvc.perform(get("/rest/members"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$[0].name").value("Alice"))
             .andExpect(jsonPath("$[0].email").value("alice@example.com"));
@@ -72,7 +72,7 @@ class MemberControllerTest {
         when(service.register(any())).thenReturn(
             new Member("1", "Alice", "alice@example.com", "1234567890"));
 
-        mockMvc.perform(post("/api/members")
+        mockMvc.perform(post("/rest/members")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
             .andExpect(status().isOk())
@@ -84,7 +84,7 @@ class MemberControllerTest {
     void POST_invalidEmail_returns400() throws Exception {
         var request = new MemberRequest("Alice", "not-an-email", "1234567890");
 
-        mockMvc.perform(post("/api/members")
+        mockMvc.perform(post("/rest/members")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
             .andExpect(status().isBadRequest());
@@ -96,7 +96,7 @@ class MemberControllerTest {
         when(service.register(any())).thenThrow(
             new EmailAlreadyExistsException("Email already registered: alice@example.com"));
 
-        mockMvc.perform(post("/api/members")
+        mockMvc.perform(post("/rest/members")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
             .andExpect(status().isConflict());
@@ -108,7 +108,7 @@ class MemberControllerTest {
             {"email":"alice@example.com","phoneNumber":"1234567890"}
             """;
 
-        mockMvc.perform(post("/api/members")
+        mockMvc.perform(post("/rest/members")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(body))
             .andExpect(status().isBadRequest());
@@ -118,7 +118,7 @@ class MemberControllerTest {
     void POST_invalidPhone_returns400WithCustomMessage() throws Exception {
         var request = new MemberRequest("Alice", "alice@example.com", "123");
 
-        mockMvc.perform(post("/api/members")
+        mockMvc.perform(post("/rest/members")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
             .andExpect(status().isBadRequest())

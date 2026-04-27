@@ -40,26 +40,26 @@ class MemberApiContractTest {
     void GET_member_byId_returns200() {
         var headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-        var created = restTemplate.postForEntity("/api/members",
+        var created = restTemplate.postForEntity("/rest/members",
             new HttpEntity<>("""
                 {"name":"Alice","email":"alice@example.com","phoneNumber":"1234567890"}
                 """, headers), Map.class);
         var id = (String) created.getBody().get("id");
 
-        var response = restTemplate.getForEntity("/api/members/" + id, Map.class);
+        var response = restTemplate.getForEntity("/rest/members/" + id, Map.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).containsEntry("name", "Alice");
     }
 
     @Test
     void GET_member_byId_notFound_returns404() {
-        var response = restTemplate.getForEntity("/api/members/000000000000000000000000", Map.class);
+        var response = restTemplate.getForEntity("/rest/members/000000000000000000000000", Map.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
     }
 
     @Test
     void GET_members_empty_returns200WithEmptyList() {
-        var response = restTemplate.getForEntity("/api/members", List.class);
+        var response = restTemplate.getForEntity("/rest/members", List.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isEmpty();
     }
@@ -72,7 +72,7 @@ class MemberApiContractTest {
             {"name":"Alice","email":"alice@example.com","phoneNumber":"1234567890"}
             """;
         var response = restTemplate.postForEntity(
-            "/api/members", new HttpEntity<>(body, headers), Map.class);
+            "/rest/members", new HttpEntity<>(body, headers), Map.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
     }
 
@@ -84,7 +84,7 @@ class MemberApiContractTest {
             {"name":"Alice","email":"not-an-email","phoneNumber":"1234567890"}
             """;
         var response = restTemplate.postForEntity(
-            "/api/members", new HttpEntity<>(body, headers), Map.class);
+            "/rest/members", new HttpEntity<>(body, headers), Map.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
     }
 
@@ -95,9 +95,9 @@ class MemberApiContractTest {
         var body = """
             {"name":"Alice","email":"alice@example.com","phoneNumber":"1234567890"}
             """;
-        restTemplate.postForEntity("/api/members", new HttpEntity<>(body, headers), Map.class);
+        restTemplate.postForEntity("/rest/members", new HttpEntity<>(body, headers), Map.class);
         var response = restTemplate.postForEntity(
-            "/api/members", new HttpEntity<>(body, headers), Map.class);
+            "/rest/members", new HttpEntity<>(body, headers), Map.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
     }
 
@@ -109,7 +109,7 @@ class MemberApiContractTest {
             {"email":"alice@example.com","phoneNumber":"1234567890"}
             """;
         var response = restTemplate.postForEntity(
-            "/api/members", new HttpEntity<>(body, headers), Map.class);
+            "/rest/members", new HttpEntity<>(body, headers), Map.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
     }
 
@@ -121,7 +121,7 @@ class MemberApiContractTest {
             {"name":"Alice","email":"alice@example.com","phoneNumber":"123"}
             """;
         var response = restTemplate.postForEntity(
-            "/api/members", new HttpEntity<>(body, headers), Map.class);
+            "/rest/members", new HttpEntity<>(body, headers), Map.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
     }
 
@@ -129,16 +129,16 @@ class MemberApiContractTest {
     void GET_members_afterTwoPosts_returnsMembersOrderedByName() {
         var headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-        restTemplate.postForEntity("/api/members",
+        restTemplate.postForEntity("/rest/members",
             new HttpEntity<>("""
                 {"name":"Zara","email":"zara@example.com","phoneNumber":"1234567890"}
                 """, headers), Map.class);
-        restTemplate.postForEntity("/api/members",
+        restTemplate.postForEntity("/rest/members",
             new HttpEntity<>("""
                 {"name":"Alice","email":"alice@example.com","phoneNumber":"0987654321"}
                 """, headers), Map.class);
 
-        var response = restTemplate.getForEntity("/api/members", List.class);
+        var response = restTemplate.getForEntity("/rest/members", List.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         var names = ((List<Map<String, Object>>) response.getBody())
             .stream().map(m -> (String) m.get("name")).toList();
