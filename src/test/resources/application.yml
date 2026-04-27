@@ -2,4 +2,4 @@ spring:
   data:
     mongodb:
       uri: mongodb://localhost:27017/kitchensink-test
-      auto-index-creation: true
+      auto-index-creation: false
