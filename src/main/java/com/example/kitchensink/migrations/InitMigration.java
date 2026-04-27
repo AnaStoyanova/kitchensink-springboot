@@ -13,12 +13,12 @@ public class InitMigration {
 
     @Execution
     public void execution(MongoTemplate mongoTemplate) {
-        mongoTemplate.indexOps(Member.class)
-                .ensureIndex(new Index("email", Sort.Direction.ASC).unique());
+        mongoTemplate.indexOps("members")
+                .createIndex(new Index().on("email", Sort.Direction.ASC).unique());
     }
 
     @RollbackExecution
     public void rollback(MongoTemplate mongoTemplate) {
-        mongoTemplate.indexOps(Member.class).dropIndex("email");
+        mongoTemplate.indexOps("members").dropIndex("email");
     }
 }
