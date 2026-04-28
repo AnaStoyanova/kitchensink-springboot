@@ -53,17 +53,24 @@ When migrating from JPA auto-increment IDs to MongoDB ObjectIds, pre-migration U
 
 The `legacyId` field is implemented in this migration: stored on the `Member` document, indexed with a sparse unique index (Mongock changeset `add-legacyId-index`), and `GET /rest/members/{id}` falls back to a `legacyId` lookup when the path parameter is numeric.
 
-**Why no data migration script is included here:** The original kitchensink uses an in-memory H2 database — there is no persistent data to migrate. More importantly, a real data migration script is inherently client-specific: it depends on the source database vendor, connection details, volume, and any transformation rules that apply to that customer's data. It belongs in a deployment runbook, not in the migrated application's repository.
+**Why no data migration is included here:** The original kitchensink uses an in-memory H2 database — there is no persistent data to migrate. More importantly, the migration is inherently client-specific: it depends on the source database vendor, connection details, volume, and transformation rules that vary per engagement. It belongs in a deployment runbook, not in the migrated application's repository.
 
-In a real engagement, such a script would typically:
-- Connect to the source relational database via JDBC
-- Page through all records (never load everything into memory)
-- For each record, insert into MongoDB with `legacyId` set to the original Long ID
-- Be idempotent — skip records whose `legacyId` already exists in MongoDB
+In a real engagement, the data migration would be implemented as either a **standalone script** or a **Mongock changeset** — both are valid; the choice depends on team preference and operational constraints:
+
+| | Standalone script | Mongock changeset |
+|---|---|---|
+| Auditability | Manual logging | Automatic via `mongockChangeLog` |
+| Idempotency | Must be coded explicitly | Guaranteed by Mongock |
+| Ordering | External coordination | Enforced by changeset `order` |
+| Activation | Run manually | Gated by Spring profile (e.g. `migration`) |
+| Trade-off | Simpler, no app coupling | Requires JDBC + MongoDB connection at startup |
+
+Regardless of mechanism, the migration would:
+- Page through source records via JDBC (never load everything into memory)
+- Insert each into MongoDB with `legacyId` set to the original Long ID
+- Skip records whose `legacyId` already exists (idempotent)
 - Emit progress logs and a final count for verification
-- Be run once, during the maintenance window or as the first step of the dual-write phase, before traffic is cut over to the new service
-
-**Mongock as the migration mechanism:** Rather than a standalone script, the data migration can be implemented as a Mongock changeset — giving auditability, idempotency, and ordering guarantees automatically via the `mongockChangeLog` collection, consistent with how schema migrations (`InitMigration`, `LegacyIdMigration`) are already managed. The changeset would be gated behind a Spring profile (e.g. `--spring.profiles.active=migration`) so it only activates during the cutover window and not on every subsequent startup. The trade-off is that it requires the app to hold both a JDBC connection to the source DB and a MongoDB connection simultaneously during that window.
+- Run once, before traffic is cut over to the new service
 
 ### At 10× the codebase (e.g. a multi-module monolith)
 
@@ -72,7 +79,7 @@ In a real engagement, such a script would typically:
 - **CI gate per phase**: Each phase runs its own test subset in CI. A failing gate blocks the next phase from merging — prevents partially-migrated states from accumulating.
 - **Database migration tooling**: [Mongock](https://mongock.io) (MongoDB's equivalent of Flyway/Liquibase) is already integrated in this migration for index creation. At larger scale it would also handle data migrations, backfills, and schema evolution as versioned, auditable changesets tracked in a `mongockChangeLog` collection.
 - **Parallel run period**: Run both legacy and new system simultaneously for a defined soak period, comparing responses. Any divergence is investigated as a bug.
-- **Data migration script**: A one-shot script (run during the maintenance window or dual-write phase) that reads all relational records via JDBC, writes them to MongoDB with `legacyId` set to the original ID, and is idempotent so it can be safely re-run. The script is client-specific — source DB vendor, credentials, and transformation rules vary per engagement — so it lives in the deployment runbook, not the application repo.
+- **Data migration**: A one-shot operation (standalone script or Mongock changeset) run during the maintenance window or dual-write phase — reads all relational records via JDBC, writes them to MongoDB with `legacyId` set to the original ID, idempotent so it can be safely re-run. Client-specific (source DB vendor, credentials, transformation rules vary per engagement), so it lives in the deployment runbook rather than the application repo.
 
 ### At 100× (full enterprise application, multiple teams)
 
