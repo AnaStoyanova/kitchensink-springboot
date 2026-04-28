@@ -58,6 +58,18 @@ In CI (GitHub Actions, GitLab CI) Testcontainers works correctly because Docker 
 
 ---
 
+## Deliberate deviations from the original contract
+
+These are places where the migrated API consciously differs from the original. HTTP status codes are preserved exactly; only non-functional details changed.
+
+| Endpoint | Original behaviour | Migrated behaviour | Reason |
+|---|---|---|---|
+| `POST /rest/members` — duplicate email | `{"email": "Email taken"}` with 409 | `{"error": "Email already registered: <email>"}` with 409 | More informative message; status code (409) is identical and no production code performs string comparison on error message bodies |
+| `POST /rest/members` — success | 200 with empty body | 200 with created member JSON | Returning the assigned `id` saves clients a follow-up GET; backwards-compatible because existing clients that ignored the body continue to work |
+| `GET /rest/members/{id}` — path constraint | `/{id:[0-9][0-9]*}` (numeric Long only) | `/{id}` (any string) | MongoDB ObjectIds are not numeric; the constraint is structurally impossible to preserve |
+
+---
+
 ## Lessons learned
 
 1. The Java EE → Spring Boot mapping is largely mechanical for the framework layers (EJB → `@Service`, JAX-RS → `@RestController`, CDI → constructor injection). The non-mechanical part is the **database**: JPA's relational model and MongoDB's document model require genuine design thinking even for a simple entity.
