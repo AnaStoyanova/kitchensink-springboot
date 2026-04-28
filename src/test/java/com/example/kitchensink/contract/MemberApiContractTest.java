@@ -99,6 +99,7 @@ class MemberApiContractTest {
         var response = restTemplate.postForEntity(
             "/rest/members", new HttpEntity<>(body, headers), Map.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
+        assertThat(response.getBody()).containsEntry("email", "Email taken");
     }
 
     @Test

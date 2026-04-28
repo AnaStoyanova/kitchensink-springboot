@@ -29,6 +29,6 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, String>> handleDuplicate(
             EmailAlreadyExistsException ex) {
         return ResponseEntity.status(HttpStatus.CONFLICT)
-            .body(Map.of("error", ex.getMessage()));
+            .body(Map.of("email", "Email taken"));
     }
 }
