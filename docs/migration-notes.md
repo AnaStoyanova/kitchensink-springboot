@@ -51,7 +51,17 @@ When migrating from JPA auto-increment IDs to MongoDB ObjectIds, pre-migration U
 
 3. **Dual-write** (zero downtime, highest confidence): deploy an intermediate version of the old app that writes to both H2 and MongoDB simultaneously, with `legacyId` preserved. Backfill existing records. Once MongoDB is confirmed current, cut traffic to the new app. Support both `/rest/members/{objectId}` and `/rest/members/{legacyId}` lookups until the numeric path can be deprecated.
 
-A `legacyId` field is only strictly necessary if external systems have **persisted references** to old numeric member IDs (bookmarks, downstream databases, emails containing member URLs). However, treating this as a production-scale migration means assuming such references exist. The `legacyId` field is implemented: it is stored on the `Member` document, indexed with a sparse unique index (via Mongock changeset `add-legacyId-index`), and `GET /rest/members/{id}` falls back to a `legacyId` lookup when the path parameter is numeric. Data migration scripts would populate this field when copying records from the relational database.
+The `legacyId` field is implemented in this migration: stored on the `Member` document, indexed with a sparse unique index (Mongock changeset `add-legacyId-index`), and `GET /rest/members/{id}` falls back to a `legacyId` lookup when the path parameter is numeric.
+
+**Why no data migration script is included here:** The original kitchensink uses an in-memory H2 database — there is no persistent data to migrate. More importantly, a real data migration script is inherently client-specific: it depends on the source database vendor, connection details, volume, and any transformation rules that apply to that customer's data. It belongs in a deployment runbook, not in the migrated application's repository.
+
+In a real engagement, such a script would typically:
+- Connect to the source relational database via JDBC
+- Page through all records (never load everything into memory)
+- For each record, insert into MongoDB with `legacyId` set to the original Long ID
+- Be idempotent — skip records whose `legacyId` already exists in MongoDB
+- Emit progress logs and a final count for verification
+- Be run once, during the maintenance window or as the first step of the dual-write phase, before traffic is cut over to the new service
 
 ### At 10× the codebase (e.g. a multi-module monolith)
 
@@ -60,6 +70,7 @@ A `legacyId` field is only strictly necessary if external systems have **persist
 - **CI gate per phase**: Each phase runs its own test subset in CI. A failing gate blocks the next phase from merging — prevents partially-migrated states from accumulating.
 - **Database migration tooling**: [Mongock](https://mongock.io) (MongoDB's equivalent of Flyway/Liquibase) is already integrated in this migration for index creation. At larger scale it would also handle data migrations, backfills, and schema evolution as versioned, auditable changesets tracked in a `mongockChangeLog` collection.
 - **Parallel run period**: Run both legacy and new system simultaneously for a defined soak period, comparing responses. Any divergence is investigated as a bug.
+- **Data migration script**: A one-shot script (run during the maintenance window or dual-write phase) that reads all relational records via JDBC, writes them to MongoDB with `legacyId` set to the original ID, and is idempotent so it can be safely re-run. The script is client-specific — source DB vendor, credentials, and transformation rules vary per engagement — so it lives in the deployment runbook, not the application repo.
 
 ### At 100× (full enterprise application, multiple teams)
 
