@@ -63,6 +63,8 @@ In a real engagement, such a script would typically:
 - Emit progress logs and a final count for verification
 - Be run once, during the maintenance window or as the first step of the dual-write phase, before traffic is cut over to the new service
 
+**Mongock as the migration mechanism:** Rather than a standalone script, the data migration can be implemented as a Mongock changeset — giving auditability, idempotency, and ordering guarantees automatically via the `mongockChangeLog` collection, consistent with how schema migrations (`InitMigration`, `LegacyIdMigration`) are already managed. The changeset would be gated behind a Spring profile (e.g. `--spring.profiles.active=migration`) so it only activates during the cutover window and not on every subsequent startup. The trade-off is that it requires the app to hold both a JDBC connection to the source DB and a MongoDB connection simultaneously during that window.
+
 ### At 10× the codebase (e.g. a multi-module monolith)
 
 - **Strangler Fig pattern**: Rather than migrating the whole app at once, introduce a reverse proxy in front of the legacy system. Route individual endpoints to the new service as they're migrated. The legacy system stays live throughout; rollback is a routing change.
