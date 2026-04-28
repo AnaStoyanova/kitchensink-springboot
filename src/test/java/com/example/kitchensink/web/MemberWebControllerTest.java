@@ -56,43 +56,35 @@ class MemberWebControllerTest {
     }
 
     @Test
-    void POST_invalidEmail_returnsFormWithErrors() throws Exception {
-        when(service.findAllOrderedByName()).thenReturn(List.of());
-
+    void POST_invalidEmail_redirectsWithErrors() throws Exception {
         mockMvc.perform(post("/")
                 .param("name", "Alice")
                 .param("email", "not-an-email")
                 .param("phoneNumber", "1234567890"))
-            .andExpect(status().isOk())
-            .andExpect(view().name("index"))
-            .andExpect(model().attributeHasFieldErrors("form", "email"));
+            .andExpect(status().is3xxRedirection())
+            .andExpect(redirectedUrl("/"));
     }
 
     @Test
-    void POST_nameWithNumbers_returnsFormWithErrors() throws Exception {
-        when(service.findAllOrderedByName()).thenReturn(List.of());
-
+    void POST_nameWithNumbers_redirectsWithErrors() throws Exception {
         mockMvc.perform(post("/")
                 .param("name", "Alice123")
                 .param("email", "alice@example.com")
                 .param("phoneNumber", "1234567890"))
-            .andExpect(status().isOk())
-            .andExpect(view().name("index"))
-            .andExpect(model().attributeHasFieldErrors("form", "name"));
+            .andExpect(status().is3xxRedirection())
+            .andExpect(redirectedUrl("/"));
     }
 
     @Test
-    void POST_duplicateEmail_returnsFormWithEmailError() throws Exception {
+    void POST_duplicateEmail_redirectsWithEmailError() throws Exception {
         when(service.register(any())).thenThrow(
             new EmailAlreadyExistsException("Email already registered: alice@example.com"));
-        when(service.findAllOrderedByName()).thenReturn(List.of());
 
         mockMvc.perform(post("/")
                 .param("name", "Alice")
                 .param("email", "alice@example.com")
                 .param("phoneNumber", "1234567890"))
-            .andExpect(status().isOk())
-            .andExpect(view().name("index"))
-            .andExpect(model().attributeHasFieldErrors("form", "email"));
+            .andExpect(status().is3xxRedirection())
+            .andExpect(redirectedUrl("/"));
     }
 }

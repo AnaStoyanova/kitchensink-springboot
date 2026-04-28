@@ -34,11 +34,11 @@ public class MemberWebController {
 
     @PostMapping
     public String register(@Valid @ModelAttribute("form") MemberForm form,
-                           BindingResult result, Model model,
-                           RedirectAttributes redirectAttrs) {
+                           BindingResult result, RedirectAttributes redirectAttrs) {
         if (result.hasErrors()) {
-            model.addAttribute("members", service.findAllOrderedByName());
-            return "index";
+            redirectAttrs.addFlashAttribute("org.springframework.validation.BindingResult.form", result);
+            redirectAttrs.addFlashAttribute("form", form);
+            return "redirect:/";
         }
         try {
             service.register(new Member(null, form.getName(), form.getEmail(), form.getPhoneNumber()));
@@ -46,8 +46,8 @@ public class MemberWebController {
                 form.getName() + " was successfully registered.");
         } catch (EmailAlreadyExistsException e) {
             result.rejectValue("email", "duplicate", e.getMessage());
-            model.addAttribute("members", service.findAllOrderedByName());
-            return "index";
+            redirectAttrs.addFlashAttribute("org.springframework.validation.BindingResult.form", result);
+            redirectAttrs.addFlashAttribute("form", form);
         }
         return "redirect:/";
     }
