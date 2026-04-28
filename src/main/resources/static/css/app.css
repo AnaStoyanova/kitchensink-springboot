@@ -183,8 +183,8 @@ form.reg-form {
     padding: 5px;
 }
 
-.simpletablestyle tr:nth-child(odd)  { background: #f4f3f3; }
-.simpletablestyle tr:nth-child(even) { background: #ffffff; }
+.simpletablestyle tbody tr:nth-child(odd)  { background: #f4f3f3; }
+.simpletablestyle tbody tr:nth-child(even) { background: #ffffff; }
 
 .simpletablestyle tfoot {
     height: 20px;
