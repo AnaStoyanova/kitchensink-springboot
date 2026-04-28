@@ -67,6 +67,7 @@ These are places where the migrated API consciously differs from the original. H
 | `POST /rest/members` — duplicate email | `{"email": "Email taken"}` with 409 | `{"error": "Email already registered: <email>"}` with 409 | More informative message; status code (409) is identical and no production code performs string comparison on error message bodies |
 | `POST /rest/members` — success | 200 with empty body | 200 with created member JSON | Returning the assigned `id` saves clients a follow-up GET; backwards-compatible because existing clients that ignored the body continue to work |
 | `GET /rest/members/{id}` — path constraint | `/{id:[0-9][0-9]*}` (numeric Long only) | `/{id}` (any string) | MongoDB ObjectIds are not numeric; the constraint is structurally impossible to preserve |
+| `GET /rest/members/{id}` — pre-migration IDs | numeric Long (e.g. `/1`, `/2`) resolved to a record | same numeric strings return 404 | IDs changed type from JPA auto-increment Long to MongoDB ObjectId string; pre-migration ID values no longer exist. In a production migration a lookup table or preserved `legacyId` field would be required to maintain continuity |
 
 ---
 
