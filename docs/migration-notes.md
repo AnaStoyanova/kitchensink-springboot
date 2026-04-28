@@ -51,7 +51,7 @@ When migrating from JPA auto-increment IDs to MongoDB ObjectIds, pre-migration U
 
 3. **Dual-write** (zero downtime, highest confidence): deploy an intermediate version of the old app that writes to both H2 and MongoDB simultaneously, with `legacyId` preserved. Backfill existing records. Once MongoDB is confirmed current, cut traffic to the new app. Support both `/rest/members/{objectId}` and `/rest/members/{legacyId}` lookups until the numeric path can be deprecated.
 
-A `legacyId` field is only necessary if external systems have **persisted references** to old numeric member IDs (e.g. bookmarks, downstream databases, emails containing member URLs). If nothing outside the app holds onto those IDs, old URLs can simply break — there is nothing to preserve continuity for. For this demo registry there are no external consumers of member IDs, so `legacyId` adds no value and was omitted. At production scale, auditing who holds references to entity IDs is the first step before choosing a strategy.
+A `legacyId` field is only strictly necessary if external systems have **persisted references** to old numeric member IDs (bookmarks, downstream databases, emails containing member URLs). However, treating this as a production-scale migration means assuming such references exist. The `legacyId` field is implemented: it is stored on the `Member` document, indexed with a sparse unique index (via Mongock changeset `add-legacyId-index`), and `GET /rest/members/{id}` falls back to a `legacyId` lookup when the path parameter is numeric. Data migration scripts would populate this field when copying records from the relational database.
 
 ### At 10× the codebase (e.g. a multi-module monolith)
 
@@ -78,8 +78,8 @@ These are places where the migrated API consciously differs from the original. H
 |---|---|---|---|
 | `POST /rest/members` — duplicate email | `{"email": "Email taken"}` with 409 | `{"error": "Email already registered: <email>"}` with 409 | More informative message; status code (409) is identical and no production code performs string comparison on error message bodies |
 | `POST /rest/members` — success | 200 with empty body | 200 with created member JSON | Returning the assigned `id` saves clients a follow-up GET; backwards-compatible because existing clients that ignored the body continue to work |
-| `GET /rest/members/{id}` — path constraint | `/{id:[0-9][0-9]*}` (numeric Long only) | `/{id}` (any string) | MongoDB ObjectIds are not numeric; the constraint is structurally impossible to preserve |
-| `GET /rest/members/{id}` — pre-migration IDs | numeric Long (e.g. `/1`, `/2`) resolved to a record | same numeric strings return 404 | IDs changed type from JPA auto-increment Long to MongoDB ObjectId string; pre-migration ID values no longer exist. For this demo app a maintenance-window migration is acceptable. At production scale, use dual-write: preserve the original Long as a `legacyId` field in MongoDB, backfill existing records, and support both lookup paths until the numeric path can be deprecated (see migration notes) |
+| `GET /rest/members/{id}` — path constraint | `/{id:[0-9][0-9]*}` (numeric Long only) | `/{id}` (any string) | MongoDB ObjectIds are not numeric; the constraint is structurally impossible to preserve — but the path now accepts more values than before, not fewer |
+| `GET /rest/members/{id}` — pre-migration IDs | numeric Long (e.g. `/1`, `/2`) resolved to a record | numeric strings fall back to `legacyId` lookup | IDs changed type from JPA auto-increment Long to MongoDB ObjectId string; backwards compatibility preserved via a `legacyId` field (sparse unique index, Mongock changeset `add-legacyId-index`) |
 
 ---
 

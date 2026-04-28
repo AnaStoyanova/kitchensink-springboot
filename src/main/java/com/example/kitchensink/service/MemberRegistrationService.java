@@ -25,7 +25,11 @@ public class MemberRegistrationService {
     }
 
     public Optional<Member> findById(String id) {
-        return repository.findById(id);
+        Optional<Member> member = repository.findById(id);
+        if (member.isEmpty() && id.matches("\\d+")) {
+            member = repository.findByLegacyId(Long.parseLong(id));
+        }
+        return member;
     }
 
     public List<Member> findAllOrderedByName() {

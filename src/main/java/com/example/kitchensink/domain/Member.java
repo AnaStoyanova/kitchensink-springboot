@@ -32,6 +32,8 @@ public class Member {
     @PhoneNumber
     private String phoneNumber;
 
+    private Long legacyId;
+
     protected Member() {}
 
     public Member(String id, String name, String email, String phoneNumber) {
@@ -48,4 +50,6 @@ public class Member {
     public void setEmail(String email) { this.email = email; }
     public String getPhoneNumber() { return phoneNumber; }
     public void setPhoneNumber(String phoneNumber) { this.phoneNumber = phoneNumber; }
+    public Long getLegacyId() { return legacyId; }
+    public void setLegacyId(Long legacyId) { this.legacyId = legacyId; }
 }

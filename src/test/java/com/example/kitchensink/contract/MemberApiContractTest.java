@@ -52,6 +52,17 @@ class MemberApiContractTest {
     }
 
     @Test
+    void GET_member_byLegacyId_returns200() {
+        var member = new Member(null, "Legacy Alice", "legacy@example.com", "1234567890");
+        member.setLegacyId(42L);
+        mongoTemplate.save(member);
+
+        var response = restTemplate.getForEntity("/rest/members/42", Map.class);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).containsEntry("name", "Legacy Alice");
+    }
+
+    @Test
     void GET_member_byId_notFound_returns404() {
         var response = restTemplate.getForEntity("/rest/members/000000000000000000000000", Map.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
