@@ -171,6 +171,8 @@ form.reg-form {
 }
 
 .simpletablestyle th {
+    background: #000000;
+    color: #ffffff;
     font-size: 12px;
     font-weight: normal;
     padding: 0 10px 0 5px;
