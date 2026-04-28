@@ -51,7 +51,7 @@ When migrating from JPA auto-increment IDs to MongoDB ObjectIds, pre-migration U
 
 3. **Dual-write** (zero downtime, highest confidence): deploy an intermediate version of the old app that writes to both H2 and MongoDB simultaneously, with `legacyId` preserved. Backfill existing records. Once MongoDB is confirmed current, cut traffic to the new app. Support both `/rest/members/{objectId}` and `/rest/members/{legacyId}` lookups until the numeric path can be deprecated.
 
-For this migration, a maintenance window is used — the dataset is a demo registry with no SLA. The dual-write pattern would apply at production scale.
+A `legacyId` field is only necessary if external systems have **persisted references** to old numeric member IDs (e.g. bookmarks, downstream databases, emails containing member URLs). If nothing outside the app holds onto those IDs, old URLs can simply break — there is nothing to preserve continuity for. For this demo registry there are no external consumers of member IDs, so `legacyId` adds no value and was omitted. At production scale, auditing who holds references to entity IDs is the first step before choosing a strategy.
 
 ### At 10× the codebase (e.g. a multi-module monolith)
 
