@@ -6,7 +6,7 @@ Migration of the [JBoss EAP kitchensink quickstart](https://github.com/jboss-dev
 
 | Java EE (original) | Spring Boot (migrated) |
 |---|---|
-| JSF / Facelets | REST API (Thymeleaf UI optional) |
+| JSF / Facelets | Thymeleaf UI + REST API |
 | JAX-RS `@GET` / `@POST` | Spring MVC `@RestController` |
 | EJB `@Stateless` | `@Service` |
 | JPA `@Entity` + H2 | `@Document` + MongoDB |
@@ -33,6 +33,9 @@ The app starts on `http://localhost:8080/kitchensink`.
 # List all members
 curl http://localhost:8080/kitchensink/rest/members
 
+# Get a single member by ID
+curl http://localhost:8080/kitchensink/rest/members/<id>
+
 # Register a member
 curl -X POST http://localhost:8080/kitchensink/rest/members \
   -H "Content-Type: application/json" \
@@ -48,6 +51,8 @@ curl -X POST http://localhost:8080/kitchensink/rest/members \
   -H "Content-Type: application/json" \
   -d '{"name":"Alice","email":"alice@example.com","phoneNumber":"1234567890"}'
 ```
+
+Interactive API docs (Swagger UI) are available at `http://localhost:8080/kitchensink/swagger-ui/index.html`.
 
 ## Run tests
 

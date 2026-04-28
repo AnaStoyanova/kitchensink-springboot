@@ -9,7 +9,7 @@ Spring Boot is the dominant enterprise Java migration target. For MongoDB's Mode
 The relational `members` table maps cleanly to a `members` collection. Key differences worth calling out in a migration:
 
 - **`id` type**: relational uses auto-increment `Long`; MongoDB uses `ObjectId` (represented as `String`) — no sequence table required
-- **Unique email**: JPA uses a DDL `UNIQUE` constraint; MongoDB uses `@Indexed(unique=true)` declared on the field and enforced by the driver — same guarantee, different mechanism
+- **Unique email**: JPA uses a DDL `UNIQUE` constraint; MongoDB enforces uniqueness via an index created by the Mongock migration (`InitMigration`). The `@Indexed(unique=true)` annotation is kept on the field for documentation, but `auto-index-creation` is disabled — Mongock is the sole index authority
 - **Queries**: JPQL disappears entirely — Spring Data resolves method names like `findAllByOrderByNameAsc()` to MongoDB queries automatically
 - **Index creation**: Managed via [Mongock](https://mongock.io) migrations (`InitMigration`), the MongoDB equivalent of Flyway/Liquibase. `auto-index-creation` is kept `false` in `application.yml` to prevent `IndexOptionsConflict` errors if an index already exists from a previous migration run. Mongock tracks each changeset in a `mongockChangeLog` collection so migrations are auditable, idempotent, and safe to run in CI/CD pipelines
 
@@ -46,7 +46,7 @@ In CI (GitHub Actions, GitLab CI) Testcontainers works correctly because Docker 
 - **Strangler Fig pattern**: Rather than migrating the whole app at once, introduce a reverse proxy in front of the legacy system. Route individual endpoints to the new service as they're migrated. The legacy system stays live throughout; rollback is a routing change.
 - **Per-component migration PRs**: Each EJB or JAX-RS resource becomes its own PR with its own contract tests. Reviewable, reversible, independently deployable.
 - **CI gate per phase**: Each phase runs its own test subset in CI. A failing gate blocks the next phase from merging — prevents partially-migrated states from accumulating.
-- **Database migration tooling**: Use [Mongock](https://mongock.io) (MongoDB's equivalent of Flyway/Liquibase) to manage index creation and data migrations as versioned, auditable changesets.
+- **Database migration tooling**: [Mongock](https://mongock.io) (MongoDB's equivalent of Flyway/Liquibase) is already integrated in this migration for index creation. At larger scale it would also handle data migrations, backfills, and schema evolution as versioned, auditable changesets tracked in a `mongockChangeLog` collection.
 - **Parallel run period**: Run both legacy and new system simultaneously for a defined soak period, comparing responses. Any divergence is investigated as a bug.
 
 ### At 100× (full enterprise application, multiple teams)
