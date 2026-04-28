@@ -41,7 +41,7 @@ public class MemberWebController {
             return "redirect:/";
         }
         try {
-            service.register(new Member(null, form.getName(), form.getEmail(), form.getPhoneNumber()));
+            service.register(new Member(form.getName(), form.getEmail(), form.getPhoneNumber()));
             redirectAttrs.addFlashAttribute("successMessage",
                 form.getName() + " was successfully registered.");
         } catch (EmailAlreadyExistsException e) {

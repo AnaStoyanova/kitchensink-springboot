@@ -50,7 +50,7 @@ public class MemberController {
     @PostMapping
     @Operation(summary = "Register a new member", description = "Validates and saves a new member to the MongoDB database")
     public ResponseEntity<MemberResponse> register(@Valid @RequestBody MemberRequest request) {
-        Member member = new Member(null, request.name(), request.email(), request.phoneNumber());
+        Member member = new Member(request.name(), request.email(), request.phoneNumber());
         Member saved = service.register(member);
         return ResponseEntity.ok(toResponse(saved));
     }

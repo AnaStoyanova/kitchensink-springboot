@@ -30,7 +30,7 @@ class MemberRepositoryTest {
 
     @Test
     void save_andFindByEmail_returnsCorrectMember() {
-        repository.save(new Member(null, "John Doe", "john@example.com", "1234567890"));
+        repository.save(new Member("John Doe", "john@example.com", "1234567890"));
 
         var found = repository.findByEmail("john@example.com");
         assertThat(found).isPresent();
@@ -39,8 +39,8 @@ class MemberRepositoryTest {
 
     @Test
     void findAllByOrderByNameAsc_returnsMembersAlphabetically() {
-        repository.save(new Member(null, "Zara", "zara@example.com", "1234567890"));
-        repository.save(new Member(null, "Alice", "alice@example.com", "0987654321"));
+        repository.save(new Member("Zara", "zara@example.com", "1234567890"));
+        repository.save(new Member("Alice", "alice@example.com", "0987654321"));
 
         var members = repository.findAllByOrderByNameAsc();
         assertThat(members).extracting(Member::getName)
@@ -49,10 +49,10 @@ class MemberRepositoryTest {
 
     @Test
     void save_duplicateEmail_throwsException() {
-        repository.save(new Member(null, "John", "john@example.com", "1234567890"));
+        repository.save(new Member("John", "john@example.com", "1234567890"));
 
         assertThatThrownBy(() ->
-            repository.save(new Member(null, "Jane", "john@example.com", "0987654321"))
+            repository.save(new Member("Jane", "john@example.com", "0987654321"))
         ).isInstanceOf(Exception.class);
     }
 

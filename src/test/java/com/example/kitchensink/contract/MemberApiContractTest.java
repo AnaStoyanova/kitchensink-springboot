@@ -53,7 +53,7 @@ class MemberApiContractTest {
 
     @Test
     void GET_member_byLegacyId_returns200() {
-        var member = new Member(null, "Legacy Alice", "legacy@example.com", "1234567890");
+        var member = new Member("Legacy Alice", "legacy@example.com", "1234567890");
         member.setLegacyId(42L);
         mongoTemplate.save(member);
 
