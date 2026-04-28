@@ -41,6 +41,18 @@ In CI (GitHub Actions, GitLab CI) Testcontainers works correctly because Docker 
 
 ## What I'd do differently at scale
 
+### ID continuity across the relational → MongoDB boundary
+
+When migrating from JPA auto-increment IDs to MongoDB ObjectIds, pre-migration URLs break unless IDs are preserved. Three approaches, in order of increasing complexity:
+
+1. **Maintenance window** (acceptable for small/non-critical apps): take the app down, run a one-shot migration script that copies all relational records to MongoDB with a `legacyId` field storing the original Long, deploy the new app. Simple, but requires downtime.
+
+2. **Background sync + feature flag** (zero downtime): run a continuous sync job from H2 → MongoDB (preserving `legacyId`) while the old app stays live. Once sync is confirmed complete, flip the feature flag. No changes to the old app.
+
+3. **Dual-write** (zero downtime, highest confidence): deploy an intermediate version of the old app that writes to both H2 and MongoDB simultaneously, with `legacyId` preserved. Backfill existing records. Once MongoDB is confirmed current, cut traffic to the new app. Support both `/rest/members/{objectId}` and `/rest/members/{legacyId}` lookups until the numeric path can be deprecated.
+
+For this migration, a maintenance window is used — the dataset is a demo registry with no SLA. The dual-write pattern would apply at production scale.
+
 ### At 10× the codebase (e.g. a multi-module monolith)
 
 - **Strangler Fig pattern**: Rather than migrating the whole app at once, introduce a reverse proxy in front of the legacy system. Route individual endpoints to the new service as they're migrated. The legacy system stays live throughout; rollback is a routing change.
@@ -67,7 +79,7 @@ These are places where the migrated API consciously differs from the original. H
 | `POST /rest/members` — duplicate email | `{"email": "Email taken"}` with 409 | `{"error": "Email already registered: <email>"}` with 409 | More informative message; status code (409) is identical and no production code performs string comparison on error message bodies |
 | `POST /rest/members` — success | 200 with empty body | 200 with created member JSON | Returning the assigned `id` saves clients a follow-up GET; backwards-compatible because existing clients that ignored the body continue to work |
 | `GET /rest/members/{id}` — path constraint | `/{id:[0-9][0-9]*}` (numeric Long only) | `/{id}` (any string) | MongoDB ObjectIds are not numeric; the constraint is structurally impossible to preserve |
-| `GET /rest/members/{id}` — pre-migration IDs | numeric Long (e.g. `/1`, `/2`) resolved to a record | same numeric strings return 404 | IDs changed type from JPA auto-increment Long to MongoDB ObjectId string; pre-migration ID values no longer exist. In a production migration a lookup table or preserved `legacyId` field would be required to maintain continuity |
+| `GET /rest/members/{id}` — pre-migration IDs | numeric Long (e.g. `/1`, `/2`) resolved to a record | same numeric strings return 404 | IDs changed type from JPA auto-increment Long to MongoDB ObjectId string; pre-migration ID values no longer exist. For this demo app a maintenance-window migration is acceptable. At production scale, use dual-write: preserve the original Long as a `legacyId` field in MongoDB, backfill existing records, and support both lookup paths until the numeric path can be deprecated (see migration notes) |
 
 ---
 
